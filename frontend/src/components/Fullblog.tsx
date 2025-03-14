@@ -5,8 +5,15 @@ import { Avatar } from "./BlogCard"
 import axios from "axios"
 import { BACKEND_URL } from "../config"
 import { useNavigate, useParams } from "react-router-dom"
+import { jwtDecode } from "jwt-decode"
 
 export const Fullblog = ({ blog }:{blog :Blog}) =>{
+    const token = localStorage.getItem("token"); // Get token from local storage
+  const decoded: any = jwtDecode(token||"");
+  console.log("Decoded JWT:", decoded);
+  const userId = decoded.id; // Extract userId
+  console.log("User ID:", userId);
+
     const navigate=useNavigate();
     const { id } = useParams();
     return <div>
@@ -40,17 +47,28 @@ export const Fullblog = ({ blog }:{blog :Blog}) =>{
                                 <div className="pt-2 relative top-3 text-slate-500">
                                     Random catch phrase about the author's ability to grab the user's attention
                                 </div>
+                               
+
                                 <div className="mt-12">
-                                <Button onClick={async ()=>{
-     await axios.delete(`${BACKEND_URL}/api/v1/blog/${id}`,{
-        headers:{
-            Authorization: localStorage.getItem("token")
-        }
-    })
-    navigate(`/blogs`)
-   }}className="w-52" color="error" variant="contained" disableElevation>
-                                        Delete Blog
-                                </Button>
+                                    {/* Only show delete button if logged-in user is the author */}
+                                    {Number(userId) === Number(blog.author.id) ? (
+                                        <Button
+                                            onClick={async () => {
+                                                await axios.delete(`${BACKEND_URL}/api/v1/blog/${id}`,{
+                                                    headers:{
+                                                        Authorization: localStorage.getItem("token")
+                                                    }
+                                                });
+                                                navigate(`/blogs`);
+                                            }}
+                                            className="w-52"
+                                            color="error"
+                                            variant="contained"
+                                            disableElevation
+                                        >
+                                            Delete Blog
+                                        </Button>
+                                    ): <Button variant="outlined" className="text-gray-500">You cannot delete this blog.</Button>}
                                 </div>
                                 </div>
                             </div>

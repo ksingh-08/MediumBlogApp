@@ -9,6 +9,7 @@ export interface Blog{
         "id":number;
         "author":{
             "name":string
+            "id":string
         }
 }
 export const useBlogs = ()=>{
