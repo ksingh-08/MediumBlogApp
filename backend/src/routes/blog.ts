@@ -21,8 +21,8 @@ blogRouter.use("/*", async (c, next) => {
     try {
         const user = await verify(authHeader, c.env.JWT_SECRET);
         if (user) {
-            //@ts-ignore
-            c.set("userId", user.id);
+            
+            c.set("userId", user.id as string);
             await next();
         } else {
             c.status(403);
@@ -161,4 +161,29 @@ blogRouter.get('/:id',async(c)=>{
     }
     
 })
+
+blogRouter.delete('/:id', async (c) => {
+    const id = c.req.param("id");
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+
+    try {
+        await prisma.blog.delete({
+            where: {
+                id: Number(id)
+            }
+        });
+        
+        return c.json({
+            message: "Blog post deleted successfully"
+        });
+    } catch (e) {
+        c.status(404);
+        return c.json({
+            message: "Blog post not found or could not be deleted"
+        });
+    }
+});
+
 
